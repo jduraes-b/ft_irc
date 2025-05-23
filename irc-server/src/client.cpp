@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:34:02 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/20 18:51:44 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/22 20:54:08 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <cstring>
 #include <iostream>
 
-Client::Client(int fd) : _clientFd(fd), _authenticated(false)
+Client::Client(int fd) : _clientFd(fd), _currChannel(""), _authenticated(false)
 {
 }
 
@@ -30,42 +30,42 @@ int Client::getFd() const
     return _clientFd;
 }
 
-void Client::setNickname(const std::string &nickname)
+void Client::setNick(const std::string &nickname)
 {
     _nick = nickname;
 }
 
-std::string Client::getNickname() const {
+std::string Client::getNick() const {
     return _nick;
 }
 
-void Client::setUsername(const std::string &username) 
+void Client::setUser(const std::string &username) 
 {
     _user = username;
 }
 
-std::string Client::getUsername() const
+std::string Client::getUser() const
 {
     return _user;
 }
 
-void Client::setCurrentChannel(const std::string &channel)
+void Client::setCurrChannel(const std::string &channel)
 {
-    _currentChannel = channel;
+    _currChannel = channel;
 }
 
-std::string Client::getCurrentChannel() const
+std::string Client::getCurrChannel() const
 {
     return _currChannel;
 }
 
 bool Client::isAuthenticated() const
 {
-    return _auth;
+    return _authenticated;
 }
 
 void Client::authenticate() {
-    _auth = true;
+    _authenticated = true;
 }
 
 void Client::sendMessage(const std::string &message)
@@ -81,22 +81,22 @@ void Client::sendMessage(const std::string &message)
     }
 }
 
-std::string Client::receiveMessage() {
+std::string Client::receiveMessage()
+{
     char buffer[512];
     memset(buffer, 0, sizeof(buffer));
-    // Using MSG_DONTWAIT to make the recv call non-blocking, same situation as above
     int bytesRead = recv(_clientFd, buffer, sizeof(buffer) - 1, MSG_DONTWAIT);
     if (bytesRead == -1) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            throw std::runtime_error("No data available to read (non-blocking mode)");
+            // No data available to read, return an empty string
+            return "";
         } else {
             throw std::runtime_error("Failed to receive message from client: " + std::string(strerror(errno)));
         }
     } else if (bytesRead == 0) {
-        // Client has closed the connection
         throw std::runtime_error("Client disconnected");
     }
-    return std::string(buffer, bytesRead); // Use bytesRead to avoid including uninitialized data
+    return std::string(buffer, bytesRead);
 }
 
 void Client::disconnect() {

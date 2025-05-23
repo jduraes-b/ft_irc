@@ -6,15 +6,19 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:27:39 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/20 18:48:13 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/22 20:08:34 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef CLIENT_HPP
 # define CLIENT_HPP
 
 #include "server.hpp"
 #include <string>
 #include <vector>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <cerrno>
 
 class	Client
 {
@@ -24,7 +28,7 @@ class	Client
 		std::string	_user;
 		std::string	_currChannel;
 		std::string	_buff;
-		bool	_auth;
+		bool	_authenticated;
 
 	public:
 		Client(int fd);		
