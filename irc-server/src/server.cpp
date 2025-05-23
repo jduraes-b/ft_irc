@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/22 21:02:57 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/23 19:11:31 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,35 +102,35 @@ void Server::acceptClient() {
     }
 
     // Create a new Client object and add it to the list
-    _clients.push_back(Client(client_fd));
+    _clients.push_back(new Client(client_fd));
     std::cout << "New client connected: " << client_fd << std::endl;
+	//attempting to avoid instant disconnection
+    try {
+        _clients.back()->sendMessage(":irc.local 001 * :Welcome to the IRC server!\r\n");
+    } catch (const std::exception &e) {
+        std::cerr << "Failed to send welcome message: " << e.what() << std::endl;
+    }
 }
 
 void Server::handleClient() //PLACEHOLDER FOR TESTING
 {
-    for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); ) {
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ) {
         try {
-            std::cout << "Handling client with fd: " << it->getFd() << std::endl;
-
-            // Attempt to receive a message from the client
-            std::string message = it->receiveMessage();
+            std::cout << "Handling client with fd: " << (*it)->getFd() << std::endl;
+            std::string message = (*it)->receiveMessage();
             if (message.empty()) {
-                std::cout << "No data received from client " << it->getFd() << std::endl;
+                std::cout << "No data received from client " << (*it)->getFd() << std::endl;
                 ++it;
-                continue; // No data to process, move to the next client
+                continue;
             }
-
-            std::cout << "Received from client " << it->getFd() << ": " << message << std::endl;
-
-            // Echo the message back to the client
-            it->sendMessage("Echo: " + message);
+            std::cout << "Received from client " << (*it)->getFd() << ": " << message << std::endl;
+            (*it)->sendMessage("Echo: " + message);
             ++it;
         } catch (const std::runtime_error &e) {
-            std::cerr << "Client " << it->getFd() << " error: " << e.what() << std::endl;
-
-            // If the client disconnected, remove it from the list
+            std::cerr << "Client " << (*it)->getFd() << " error: " << e.what() << std::endl;
             if (std::string(e.what()) == "Client disconnected") {
-                std::cout << "Removing client " << it->getFd() << " from the list" << std::endl;
+                std::cout << "Removing client " << (*it)->getFd() << " from the list" << std::endl;
+                delete *it;
                 it = _clients.erase(it);
             } else {
                 ++it;

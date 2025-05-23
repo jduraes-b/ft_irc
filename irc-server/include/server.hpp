@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <sys/epoll.h>
+#include <memory>
 #include "client.hpp"
 
 class Client;
@@ -11,10 +12,10 @@ class Client;
 class Server {
 private:
     int _port;
-	int _pass;
-	int _epoll_fd;
-	int _server_fd;
-    std::vector<Client> _clients;
+    int _pass;
+    int _epoll_fd;
+    int _server_fd;
+    std::vector<Client*> _clients;
 	
 public:
     Server(int port/*, int pass = 0*/);
