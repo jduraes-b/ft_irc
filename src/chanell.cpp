@@ -119,7 +119,7 @@ std::string Channel::getMemberList() const
             list += " ";
             
         // Verificar prefixos: @ para op, + para voice
-        //e escrever o prefixo antes do nome
+        //e escrever o prefixo antes do nome 
             
         list += (*it)->getNickname();
     }
