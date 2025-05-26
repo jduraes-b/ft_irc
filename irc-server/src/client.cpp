@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:34:02 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/22 20:54:08 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/26 20:28:11 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,16 @@ std::string Client::getUser() const
     return _user;
 }
 
+void Client::setPass(const std::string &password) 
+{
+    _pass = password;
+}
+
+std::string Client::getPass() const
+{
+    return _pass;
+}
+
 void Client::setCurrChannel(const std::string &channel)
 {
     _currChannel = channel;
@@ -70,14 +80,14 @@ void Client::authenticate() {
 
 void Client::sendMessage(const std::string &message)
 {
-	//the flags stop the client from sending SIGPIPE and make the function non-blocking, respectively
-	//i am not sure how this will behave but it sounds like what the subject demands
+    //the flags stop the client from sending SIGPIPE and make the function non-blocking, respectively
+    //i am not sure how this will behave but it sounds like what the subject demands
     if (send(_clientFd, message.c_str(), message.size(), MSG_NOSIGNAL | MSG_DONTWAIT) == -1)
-	{
+    {
         if (errno == EAGAIN || errno == EWOULDBLOCK)
-			throw std::runtime_error("Socket send buffer is full, message could not be sent");
+            throw std::runtime_error("Socket send buffer is full, message could not be sent");
         else
-        	throw std::runtime_error("Failed to send message to client: " + std::string(strerror(errno)));
+            throw std::runtime_error("Failed to send message to client: " + std::string(strerror(errno)));
     }
 }
 

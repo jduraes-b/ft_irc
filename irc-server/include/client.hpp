@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:27:39 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/22 20:08:34 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/26 20:27:31 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class	Client
 		std::string	_user;
 		std::string	_currChannel;
 		std::string	_buff;
+		std::string	_pass;
 		bool	_authenticated;
 
 	public:
@@ -38,6 +39,8 @@ class	Client
 		std::string getNick() const;
 		void setUser(const std::string &username);
 		std::string getUser() const;
+		void setPass(const std::string &password);
+		std::string getPass() const;
 		void setCurrChannel(const std::string &channel);
 		std::string getCurrChannel() const;
 		bool isAuthenticated() const;

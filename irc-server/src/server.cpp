@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/23 19:11:31 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/26 20:32:04 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include <stdexcept> // For std::runtime_error
 #include <iostream>
 #include <cstring> // For strerror
+#include <sstream>
 
 Server::Server(int port/*, int pass*/): _port(port), _epoll_fd(-1), _server_fd(-1)
 {
@@ -106,7 +107,7 @@ void Server::acceptClient() {
     std::cout << "New client connected: " << client_fd << std::endl;
 	//attempting to avoid instant disconnection
     try {
-        _clients.back()->sendMessage(":irc.local 001 * :Welcome to the IRC server!\r\n");
+        _clients.back()->sendMessage(":irc.local NOTICE * :Welcome!\r\n");
     } catch (const std::exception &e) {
         std::cerr << "Failed to send welcome message: " << e.what() << std::endl;
     }
@@ -114,27 +115,65 @@ void Server::acceptClient() {
 
 void Server::handleClient() //PLACEHOLDER FOR TESTING
 {
-    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ) {
+	for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ) {
         try {
-            std::cout << "Handling client with fd: " << (*it)->getFd() << std::endl;
-            std::string message = (*it)->receiveMessage();
-            if (message.empty()) {
-                std::cout << "No data received from client " << (*it)->getFd() << std::endl;
+            std::string msg = (*it)->receiveMessage();
+            if (msg.empty()) {
                 ++it;
                 continue;
             }
-            std::cout << "Received from client " << (*it)->getFd() << ": " << message << std::endl;
-            (*it)->sendMessage("Echo: " + message);
+
+            // Split by lines (IRC commands end with \r\n)
+            size_t start = 0, end;
+            while ((end = msg.find("\r\n", start)) != std::string::npos) {
+                std::string line = msg.substr(start, end - start);
+                start = end + 2;
+
+                // Parse cmd and argument
+                std::istringstream iss(line);
+                std::string cmd;
+                iss >> cmd;
+
+                if (cmd == "CAP") { //no support yet
+                    (*it)->sendMessage("CAP * LS :\r\n");
+				} else if (cmd == "PASS") {
+                    std::string pass;
+                    iss >> pass;
+                    (*it)->setPass(pass);
+				} else if (cmd == "NICK") {
+                    std::string nick;
+                    iss >> nick;
+                    (*it)->setNick(nick);
+                } else if (cmd == "USER") {
+                    std::string user;
+                    iss >> user;
+                    (*it)->setUser(user);
+                } else if (cmd == "PING") {
+                    std::string token;
+                    iss >> token;
+                    (*it)->sendMessage("PONG " + token + "\r\n");
+                } else if (cmd == "QUIT") {
+                    throw std::runtime_error("Client disconnected");
+                }
+
+                // Authenticate if both nick and user are set
+                if (!(*it)->getNick().empty() && !(*it)->getUser().empty() && !(*it)->isAuthenticated()) 
+				{
+					if ((*it)->getPass().empty())
+					{
+						(*it)->sendMessage(":irc.local NOTICE * :A password is required for authentication.\r\n");
+						throw std::runtime_error("Missing password");
+					}
+                    (*it)->authenticate();
+					std::cout << "New user authenticated: nick='" << (*it)->getNick()
+					<< "', user='" << (*it)->getUser() << "', fd=" << (*it)->getFd() << std::endl;
+                    (*it)->sendMessage(":irc.local 001 " + (*it)->getNick() + " :Welcome to the IRC server!\r\n");
+                }
+            }
             ++it;
         } catch (const std::runtime_error &e) {
-            std::cerr << "Client " << (*it)->getFd() << " error: " << e.what() << std::endl;
-            if (std::string(e.what()) == "Client disconnected") {
-                std::cout << "Removing client " << (*it)->getFd() << " from the list" << std::endl;
-                delete *it;
-                it = _clients.erase(it);
-            } else {
-                ++it;
-            }
+            delete *it;
+            it = _clients.erase(it);
         }
-    }
+    }	
 }
