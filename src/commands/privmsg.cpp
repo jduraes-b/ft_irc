@@ -1,4 +1,4 @@
-// This file implements the functionality for the PRIVMSG command, enabling clients to send private messages to each other.
+/*// This file implements the functionality for the PRIVMSG command, enabling clients to send private messages to each other.
 
 #include "privmsg.hpp"
 #include "../client.hpp"
@@ -12,4 +12,4 @@ void handlePrivmsg(Client &sender, const std::string &recipient, const std::stri
     } else {
         sender.sendMessage("No such nick/channel: " + recipient);
     }
-}
+}*/
