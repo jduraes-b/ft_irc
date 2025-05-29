@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/28 23:36:53 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/29 19:26:08 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,9 +195,10 @@ void Server::parseCommand(int client_fd, const std::string &command)
     
     const char* commands[] = {
         "JOIN", "PART", "KICK", "INVITE", "TOPIC", "MODE",
-        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO"
+        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO",
+        "CAP", "PING"
     };
-    const int numCommands = 12;
+    const int numCommands = 14;
     
     Client* client = getClientByFd(client_fd);
     if (!client)
@@ -277,6 +278,13 @@ void Server::parseCommand(int client_fd, const std::string &command)
             break;
         case 11:
             whoCommand(client_fd, restOfCommand);
+            break;
+        case 12: // CAP
+            // just acknowledge CAP for now
+            getClientByFd(client_fd)->sendMessage(":irc.local CAP * ACK :" + restOfCommand + "\r\n");
+            break;
+        case 13: // PING
+            getClientByFd(client_fd)->sendMessage("PONG :" + restOfCommand + "\r\n");
             break;
         default:
             // Unknown command
