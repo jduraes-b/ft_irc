@@ -10,7 +10,7 @@ SRC = src/main.cpp src/server.cpp src/client.cpp src/channel.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 
-NAME = irc_server
+NAME = ircserv
 
 all: $(NAME)
 
