@@ -53,7 +53,24 @@ irc-server
 3. **Run the server**: 
    After building, you can run the server executable.
    ```
-   ./irc-server
+   ./irc-server <port> <serverPassword>
+   ```
+
+4. **Try some commands**: 
+   Once is running, try some of the commands with more then 1 user running the server.
+   ```
+   ./nick Gerundio
+   ./password
+   ./join #test
+   ./kick Gerundio
+   ./mode +ikl password 20
+   ./invite Gerundio
+   ./join #test password
+   ./topic Test New Topic
+   ./WHO Gerundio
+   ./mode -i
+   ./part
+   ./quit
    ```
 
 ## Usage
