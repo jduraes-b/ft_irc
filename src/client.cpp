@@ -74,6 +74,11 @@ std::string Client::getCurrChannel() const
     return "";
 }
 
+std::string& Client::getBuffer()
+{
+    return _buff;
+}
+
 void Client::addChannel(const std::string &channel)
 {
     if (std::find(_channelsList.begin(), _channelsList.end(), channel) == _channelsList.end())

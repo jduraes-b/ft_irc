@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/31 16:02:36 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/31 16:58:46 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,22 +125,19 @@ void Server::handleClient(int client_fd)
         std::string msg = client->receiveMessage();
         if (msg.empty())
             return;
-        
-        size_t start = 0, end;
-        while ((end = msg.find("\r\n", start)) != std::string::npos)
-        {
-            std::string line = msg.substr(start, end - start);
-            start = end + 2;
-            parseCommand(client_fd, line);
-        }
-        
-        // Handle partial command (no \r\n yet)
-        if (start < msg.length())
-        {
-            // TODO
-            // Store partial command for next receive
-            // add a buffer to Client class for this
-        }
+
+        // Accumulate data in the client's buffer
+		client->getBuffer() += msg;
+
+		size_t pos;
+		// Process all complete commands in the buffer
+		while ((pos = client->getBuffer().find("\r\n")) != std::string::npos)
+		{
+			std::string line = client->getBuffer().substr(0, pos);
+			client->getBuffer().erase(0, pos + 2); // Remove processed command
+			parseCommand(client_fd, line);
+		}
+        // Any leftover in _buff is a partial command, keep it for next time
     }
     catch (const std::runtime_error &e)
     {

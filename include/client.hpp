@@ -39,6 +39,7 @@ class	Client
 		std::string getPass() const;
 		void setCurrChannel(const std::string &channel);
 		std::string getCurrChannel() const;
+		std::string& getBuffer();
 		void addChannel(const std::string &channel);
 		void removeChannel(const std::string &channel);
 		bool isInChannel(const std::string &channel) const;
