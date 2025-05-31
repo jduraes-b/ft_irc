@@ -1,8 +1,7 @@
 #ifndef JOIN_HPP
 #define JOIN_HPP
 
-#include <string>
-#include <vector>
+#include "utils/utils.hpp"
 
 void handleJoinCommand(const std::string& channel, const std::string& clientNickname);
 
