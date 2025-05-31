@@ -3,15 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 20:11:08 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/28 12:32:00 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/31 16:44:24 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server.hpp"
 #include "utils/utils.hpp"
+#include <csignal>
+
+volatile std::sig_atomic_t g_running = 1;
+
+void handle_sigint(int)
+{
+    g_running = 0;
+    std::cout << "\nSinal SIGINT recebido. A encerrar servidor..." << std::endl;
+
+}
 
 int main(int ac, char **av)
 {    
@@ -23,9 +33,9 @@ int main(int ac, char **av)
     try
 	{
         // Initialize the server with a port and optional password
-        //int port = 6667; // Default IRC port
         Server server(std::atoi(av[1]), av[2]);
 
+		std::signal(SIGINT, handle_sigint);
         // Start the server (includes the main event loop)
         server.start();
     } 

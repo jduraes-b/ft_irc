@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 14:58:04 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/05/31 01:11:38 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/31 16:00:52 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include <sstream>
 #include <cstring>
 #include <cctype>
+#include <csignal>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <cerrno>
@@ -142,5 +143,9 @@ std::string trim(const std::string &str);
 std::string toLower(const std::string &str);
 std::string toUpper(const std::string &str);
 void logMessage(const std::string &message);
+extern volatile std::sig_atomic_t g_running;
+
 
 #endif // UTILS_HPP
+
+
