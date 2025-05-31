@@ -12,19 +12,24 @@ irc-server
 │   ├── client.cpp        # Implementation of the Client class
 │   ├── channel.cpp       # Implementation of the Channel class
 │   ├── commands          # Directory for command implementations
+│   │   ├── invite.cpp    # INVITE command functionality
 │   │   ├── join.cpp      # JOIN command functionality
-│   │   ├── privmsg.cpp    # PRIVMSG command functionality
-│   │   └── quit.cpp      # QUIT command functionality
+│   │   ├── kick.cpp      # KICK command fuctionality
+│   │   ├── mode.cpp      # MODE command fuctionality
+│   │   ├── nick.cpp      # NICK command fuctionality
+│   │   ├── part.cpp      # PART command fuctionality
+│   │   ├── pass.cpp      # PASS command fuctionality
+│   │   ├── privmsg.cpp   # PRIVMSG command functionality
+│   │   ├── quit.cpp      # QUIT command functionality
+│   │   ├── topic.cpp     # TOPIC command fuctionality
+│   │   ├── user.cpp      # USER command fuctionality
+│   │   └── who.cpp       # WHO command functionality
 │   └── utils             # Directory for utility functions
 │       └── utils.cpp     # Utility functions implementation
 ├── include
 │   ├── server.hpp        # Header for the Server class
 │   ├── client.hpp        # Header for the Client class
 │   ├── channel.hpp       # Header for the Channel class
-│   ├── commands          # Directory for command headers
-│   │   ├── join.hpp      # Header for JOIN command
-│   │   ├── privmsg.hpp    # Header for PRIVMSG command
-│   │   └── quit.hpp      # Header for QUIT command
 │   └── utils             # Directory for utility headers
 │       └── utils.hpp     # Utility functions header
 ├── Makefile              # Build instructions for the project

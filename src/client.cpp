@@ -6,19 +6,20 @@
 /*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:34:02 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/28 11:00:06 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/31 00:51:17 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "client.hpp"
 
 
-Client::Client(int fd) : _clientFd(fd), _currChannel(""), _authenticated(false)
+Client::Client(int fd) : _clientFd(fd), _authenticated(false)
 {
 }
 
 Client::~Client()
 {
+    _channelsList.clear();
     disconnect();
 }
 
@@ -58,12 +59,56 @@ std::string Client::getPass() const
 
 void Client::setCurrChannel(const std::string &channel)
 {
-    _currChannel = channel;
+    if (!channel.empty())
+    {
+        addChannel(channel);
+    }
 }
 
 std::string Client::getCurrChannel() const
 {
-    return _currChannel;
+    if (!_channelsList.empty())
+    {
+        return _channelsList[0];
+    }
+    return "";
+}
+
+void Client::addChannel(const std::string &channel)
+{
+    if (std::find(_channelsList.begin(), _channelsList.end(), channel) == _channelsList.end())
+    {
+        _channelsList.push_back(channel);
+    }
+}
+
+void Client::removeChannel(const std::string &channel)
+{
+    std::vector<std::string>::iterator it = std::find(_channelsList.begin(), _channelsList.end(), channel);
+    if (it != _channelsList.end())
+    {
+        _channelsList.erase(it);
+    }
+}
+
+bool Client::isInChannel(const std::string &channel) const
+{
+    return std::find(_channelsList.begin(), _channelsList.end(), channel) != _channelsList.end();
+}
+
+std::vector<std::string> Client::getChannels() const
+{
+    return _channelsList;
+}
+
+size_t Client::getChannelCount() const
+{
+    return _channelsList.size();
+}
+
+void Client::clearChannels()
+{
+    _channelsList.clear();
 }
 
 bool Client::isAuthenticated() const

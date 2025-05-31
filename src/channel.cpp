@@ -6,7 +6,7 @@
 /*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/28 11:04:06 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/05/28 12:00:48 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/29 12:32:56 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,11 @@ size_t Channel::getMemberCount() const
 time_t Channel::getCreationTime() const
 {
     return (this->_creationTime);
+}
+
+std::string Channel::getKey() const
+{
+    return (this->_key);
 }
 
 // Topic

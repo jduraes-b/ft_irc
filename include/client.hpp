@@ -6,7 +6,7 @@
 /*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:27:39 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/28 10:58:18 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/31 00:51:33 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class	Client
 		int	_clientFd;
 		std::string	_nick;
 		std::string	_user;
-		std::string	_currChannel;
+		std::vector<std::string> _channelsList;
 		std::string	_buff;
 		std::string	_pass;
 		bool	_authenticated;
@@ -39,6 +39,12 @@ class	Client
 		std::string getPass() const;
 		void setCurrChannel(const std::string &channel);
 		std::string getCurrChannel() const;
+		void addChannel(const std::string &channel);
+		void removeChannel(const std::string &channel);
+		bool isInChannel(const std::string &channel) const;
+		std::vector<std::string> getChannels() const;
+		size_t getChannelCount() const;
+		void clearChannels();
 		bool isAuthenticated() const;
 		void authenticate();
 		void sendMessage(const std::string &message);

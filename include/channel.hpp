@@ -6,7 +6,7 @@
 /*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/22 23:01:45 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/05/28 12:01:02 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/05/29 12:32:22 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Channel
 	std::string getTopic() const;
 	size_t getMemberCount() const;
 	time_t getCreationTime() const;
+	std::string getKey()const;
 	
 	//Topic
 	void setTopic(const std::string &topic, Client *setter);

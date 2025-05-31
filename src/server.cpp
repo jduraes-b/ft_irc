@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/29 19:26:08 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/05/31 00:51:04 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -157,13 +157,6 @@ void Server::handleClient(int client_fd)
 }
 
 
-
-
-
-
-
-
-
 Client* Server::getClientByFd(int fd)
 {
     for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
@@ -195,10 +188,9 @@ void Server::parseCommand(int client_fd, const std::string &command)
     
     const char* commands[] = {
         "JOIN", "PART", "KICK", "INVITE", "TOPIC", "MODE",
-        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO",
-        "CAP", "PING"
+        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO"
     };
-    const int numCommands = 14;
+    const int numCommands = 12;
     
     Client* client = getClientByFd(client_fd);
     if (!client)
@@ -279,152 +271,11 @@ void Server::parseCommand(int client_fd, const std::string &command)
         case 11:
             whoCommand(client_fd, restOfCommand);
             break;
-        case 12: // CAP
-            // just acknowledge CAP for now
-            getClientByFd(client_fd)->sendMessage(":irc.local CAP * ACK :" + restOfCommand + "\r\n");
-            break;
-        case 13: // PING
-            getClientByFd(client_fd)->sendMessage("PONG :" + restOfCommand + "\r\n");
-            break;
         default:
             // Unknown command
             sendError(client_fd, "421 " + client->getNick() + " " + foundCommand + " :Unknown command");
             break;
     }
-}
-
-void Server::joinCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: JOIN command
-    std::cout << "JOIN command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::partCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: PART command
-    std::cout << "PART command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::kickCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: KICK command
-    std::cout << "KICK command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::inviteCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: INVITE command
-    std::cout << "INVITE command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::topicCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: TOPIC command
-    std::cout << "TOPIC command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::modeCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: MODE command
-    std::cout << "MODE command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::passCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // Set password
-    client->setPass(params);
-    std::cout << "PASS command from fd " << client_fd << std::endl;
-}
-
-void Server::nickCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // Set nickname
-    client->setNick(params);
-    std::cout << "NICK command: setting nickname to " << params << std::endl;
-}
-
-void Server::userCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    std::istringstream iss(params);
-    std::string username;
-    iss >> username;
-    
-    client->setUser(username);
-    
-    // Check if we can authenticate the client
-    if (!client->getNick().empty() && !client->getUser().empty() && !client->isAuthenticated())
-    {
-        if (client->getPass() != _pass)
-        {
-            sendError(client_fd, ":irc.local 464 * :Password incorrect");
-            return;
-        }
-        
-        client->authenticate();
-        std::cout << "Client authenticated: " << client->getNick() << std::endl;
-        client->sendMessage(":irc.local 001 " + client->getNick() + " :Welcome to the IRC server!\r\n");
-    }
-}
-
-void Server::privmsgCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: PRIVMSG command
-    std::cout << "PRIVMSG command from " << client->getNick() << " with params: " << params << std::endl;
-}
-
-void Server::quitCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    std::cout << "QUIT command from " << client->getNick() << " with reason: " << params << std::endl;
-    
-    // Remove client from all channels
-    // TODO: channel removal
-    
-    // Send quit message to client
-    client->sendMessage("ERROR :Closing Link: " + client->getNick() + " (" + params + ")\r\n");
-    
-    throw std::runtime_error("Client quit");
-}
-
-void Server::whoCommand(int client_fd, const std::string &params)
-{
-    Client* client = getClientByFd(client_fd);
-    if (!client) return;
-    
-    // TODO: WHO command
-    std::cout << "WHO command from " << client->getNick() << " with params: " << params << std::endl;
 }
 
 void Server::sendError(int client_fd, const std::string &error)
