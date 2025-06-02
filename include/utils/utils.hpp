@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 14:58:04 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/05/31 16:00:52 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/06/02 19:21:38 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,5 +147,4 @@ extern volatile std::sig_atomic_t g_running;
 
 
 #endif // UTILS_HPP
-
 
