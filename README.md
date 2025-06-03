@@ -41,7 +41,7 @@ irc-server
 1. **Clone the repository**: 
    ```
    git clone <repository-url>
-   cd irc-server
+   cd ft_irc
    ```
 
 2. **Build the project**: 
@@ -53,7 +53,7 @@ irc-server
 3. **Run the server**: 
    After building, you can run the server executable.
    ```
-   ./irc-server <port> <serverPassword>
+   ./ircserv <port> <serverPassword>
    ```
 
 4. **Try some commands**: 
