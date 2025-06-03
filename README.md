@@ -59,18 +59,18 @@ ft_irc
 4. **Try some IRC commands**:  
    Once the server is running and you are connected with an IRC client or netcat, try commands like:
    ```
-   NICK Gerundio
-   PASS <serverPassword>
-   JOIN #test
-   KICK #test Gerundio
-   MODE #test +ikl password 20
-   INVITE Gerundio #test
-   JOIN #test password
-   TOPIC #test :Test New Topic
-   WHO Gerundio
-   MODE #test -i
-   PART #test
-   QUIT
+   /nick Gerundio
+   /pass <serverPassword>
+   /join #test
+   /kick #test Gerundio
+   /mode #test +ikl password 20
+   /invite Gerundio #test
+   /join #test password
+   /topic #test :Test New Topic
+   /who Gerundio
+   /mode #test -i
+   /part #test
+   /quit
    ```
 
 ## Usage
