@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/02 19:23:28 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/06/03 19:43:06 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,11 +96,15 @@ void	Server::start()
 
 	const int MAX_EVENTS = 10;
 	epoll_event events[MAX_EVENTS];
-	while (true)
+	while (g_running)
 	{
 		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, -1);
 		if (num_events == -1)
+		{
+			if (errno == EINTR)
+				continue;
 			throw std::runtime_error("epoll_wait failed");
+		}
 		for (int i = 0; i < num_events; i++)
 		{
 			if (events[i].data.fd == _server_fd)
@@ -109,8 +113,9 @@ void	Server::start()
 				handleClient(events[i].data.fd);
 		}
 	}
+	
     // Clean up: close sockets, free memory, etc.
-    // ...add cleanup code here...
+    cleanup();
 }
 
 void Server::acceptClient() {
