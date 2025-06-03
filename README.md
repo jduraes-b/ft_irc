@@ -5,7 +5,7 @@ This project implements a basic IRC server in C++98. The server is designed to m
 ## Project Structure
 
 ```
-irc-server
+ft_irc
 ├── src
 │   ├── main.cpp          # Entry point of the IRC server application
 │   ├── server.cpp        # Implementation of the Server class
@@ -56,21 +56,21 @@ irc-server
    ./ircserv <port> <serverPassword>
    ```
 
-4. **Try some commands**: 
-   Once is running, try some of the commands with more then 1 user running the server.
+4. **Try some IRC commands**:  
+   Once the server is running and you are connected with an IRC client or netcat, try commands like:
    ```
-   ./nick Gerundio
-   ./password
-   ./join #test
-   ./kick Gerundio
-   ./mode +ikl password 20
-   ./invite Gerundio
-   ./join #test password
-   ./topic Test New Topic
-   ./WHO Gerundio
-   ./mode -i
-   ./part
-   ./quit
+   NICK Gerundio
+   PASS <serverPassword>
+   JOIN #test
+   KICK #test Gerundio
+   MODE #test +ikl password 20
+   INVITE Gerundio #test
+   JOIN #test password
+   TOPIC #test :Test New Topic
+   WHO Gerundio
+   MODE #test -i
+   PART #test
+   QUIT
    ```
 
 ## Usage
