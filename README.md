@@ -57,7 +57,7 @@ ft_irc
    ```
 
 4. **Try some IRC commands**:  
-   Once the server is running and you are connected with an IRC client or netcat, try commands like:
+   Once the server is running and you are connected with Hexchat or another IRC client try commands like:
    ```
    /nick Gerundio
    /pass <serverPassword>
