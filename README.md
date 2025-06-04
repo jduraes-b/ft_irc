@@ -78,9 +78,6 @@ ft_irc
 - The server listens for incoming client connections and processes commands such as JOIN, PRIVMSG, and QUIT.
 - Clients can connect to the server using an IRC client application.
 
-## Contributing
-
-Feel free to submit issues or pull requests if you would like to contribute to the project. 
 
 ## License
 
