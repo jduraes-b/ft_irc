@@ -5,7 +5,7 @@ This project implements a basic IRC server in C++98. The server is designed to m
 ## Project Structure
 
 ```
-irc-server
+ft_irc
 ├── src
 │   ├── main.cpp          # Entry point of the IRC server application
 │   ├── server.cpp        # Implementation of the Server class
@@ -41,7 +41,7 @@ irc-server
 1. **Clone the repository**: 
    ```
    git clone <repository-url>
-   cd irc-server
+   cd ft_irc
    ```
 
 2. **Build the project**: 
@@ -53,24 +53,24 @@ irc-server
 3. **Run the server**: 
    After building, you can run the server executable.
    ```
-   ./irc-server <port> <serverPassword>
+   ./ircserv <port> <serverPassword>
    ```
 
-4. **Try some commands**: 
-   Once is running, try some of the commands with more then 1 user running the server.
+4. **Try some IRC commands**:  
+   Once the server is running and you are connected with Hexchat or another IRC client try commands like:
    ```
-   ./nick Gerundio
-   ./password
-   ./join #test
-   ./kick Gerundio
-   ./mode +ikl password 20
-   ./invite Gerundio
-   ./join #test password
-   ./topic Test New Topic
-   ./WHO Gerundio
-   ./mode -i
-   ./part
-   ./quit
+   /nick Gerundio
+   /pass <serverPassword>
+   /join #test
+   /kick #test Gerundio
+   /mode #test +ikl password 20
+   /invite Gerundio #test
+   /join #test password
+   /topic #test :Test New Topic
+   /who Gerundio
+   /mode #test -i
+   /part #test
+   /quit
    ```
 
 ## Usage
@@ -78,9 +78,6 @@ irc-server
 - The server listens for incoming client connections and processes commands such as JOIN, PRIVMSG, and QUIT.
 - Clients can connect to the server using an IRC client application.
 
-## Contributing
-
-Feel free to submit issues or pull requests if you would like to contribute to the project. 
 
 ## License
 

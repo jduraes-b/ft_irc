@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/31 16:58:46 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/06/03 19:43:06 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
-#include <csignal>
 
 Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epoll_fd(-1), _server_fd(-1)
 {
@@ -22,6 +21,49 @@ Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epo
 
 Server::~Server()
 {}
+
+void Server::cleanup()
+{
+    // Fazer cleanup de todos os clientes
+    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+    {
+        if (*it != NULL)
+        {
+            // Fechar socket do cliente
+            close((*it)->getFd());
+            
+            // Remover do epoll se necessário
+            if (_epoll_fd != -1)
+                epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, (*it)->getFd(), NULL);
+            
+            // Fazer delete do objeto cliente
+            delete *it;
+        }
+    }
+    
+    // Limpar o vector
+    _clients.clear();
+    
+    // Fazer cleanup dos canais
+    for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+    {
+        delete it->second;
+    }
+    _channels.clear();
+    
+    // Fechar sockets do servidor
+    if (_server_fd != -1)
+    {
+        close(_server_fd);
+        _server_fd = -1;
+    }
+    
+    if (_epoll_fd != -1)
+    {
+        close(_epoll_fd);
+        _epoll_fd = -1;
+    }
+}
 
 void	Server::start()
 {
@@ -34,8 +76,7 @@ void	Server::start()
 	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)))
 		throw std::runtime_error("Error while setting socket options");
 	//this sets option for the socket to reuse local adress
-	sockaddr_in server_addr;
-	memset(&server_addr, 0, sizeof(server_addr));
+	sockaddr_in server_addr = {}; //initializes struct with zero values
 	server_addr.sin_family = AF_INET; //sets adress family to use IPv4
     server_addr.sin_addr.s_addr = INADDR_ANY; //accepts connections to any network interface
 	server_addr.sin_port = htons(_port);//converts port to network format and sets it
@@ -57,11 +98,13 @@ void	Server::start()
 	epoll_event events[MAX_EVENTS];
 	while (g_running)
 	{
-		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, 1000); // 1s timeout
-		if (num_events == -1) {
-            if (errno == EINTR) continue; // Interrupted by signal
-            throw std::runtime_error("epoll_wait failed");
-        }
+		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, -1);
+		if (num_events == -1)
+		{
+			if (errno == EINTR)
+				continue;
+			throw std::runtime_error("epoll_wait failed");
+		}
 		for (int i = 0; i < num_events; i++)
 		{
 			if (events[i].data.fd == _server_fd)
@@ -70,8 +113,9 @@ void	Server::start()
 				handleClient(events[i].data.fd);
 		}
 	}
+	
     // Clean up: close sockets, free memory, etc.
-    // ...add cleanup code here...
+    cleanup();
 }
 
 void Server::acceptClient() {
