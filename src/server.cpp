@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/03 19:43:06 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/06/06 19:31:29 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,8 +113,6 @@ void	Server::start()
 				handleClient(events[i].data.fd);
 		}
 	}
-	
-    // Clean up: close sockets, free memory, etc.
     cleanup();
 }
 
@@ -235,9 +233,9 @@ void Server::parseCommand(int client_fd, const std::string &command)
     
     const char* commands[] = {
         "JOIN", "PART", "KICK", "INVITE", "TOPIC", "MODE",
-        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO"
+        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO", "PING"
     };
-    const int numCommands = 12;
+    const int numCommands = 13;
     
     Client* client = getClientByFd(client_fd);
     if (!client)
@@ -318,6 +316,9 @@ void Server::parseCommand(int client_fd, const std::string &command)
         case 11:
             whoCommand(client_fd, restOfCommand);
             break;
+		case 12: // PING
+        	client->sendMessage("PONG :" + restOfCommand + "\r\n");
+        	break;
         default:
             // Unknown command
             sendError(client_fd, "421 " + client->getNick() + " " + foundCommand + " :Unknown command");
