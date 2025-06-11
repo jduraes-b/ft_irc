@@ -18,7 +18,7 @@ TODO: RFC 2812 Compliance
    - Implement WHOIS and WHOWAS commands with correct replies.
 
 ❓(WHO esta implementado, NAMES e LIST não está feito e não é pedido)
-5. NAMES, LIST, and Other Queries
+   5. NAMES, LIST, and Other Queries
    - Implement NAMES (353, 366) and LIST (321, 322, 323) commands.
 
 ❌ (nao é preciso)
