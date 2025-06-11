@@ -6,8 +6,8 @@ TODO: RFC 2812 Compliance
    - Send RPL_YOURHOST, RPL_CREATED, RPL_MYINFO.
    - Send correct error numerics for registration failures (e.g., 462, 464).
 
-2. PING/PONG
-   - Implement PING and PONG commands for client-server keepalive.
+~~2. PING/PONG 
+   - Implement PING and PONG commands for client-server keepalive.~~
 
 3. MOTD
    - Implement MOTD command and send numerics 375, 372, 376.
@@ -86,5 +86,5 @@ TODO: RFC 2812 Compliance
 27. Channel/Client Quit/Part/Disconnect Edge Cases
     - Handle all edge cases and send all required numerics/messages.
 
-28. Server-to-Server Protocol
+28. Server-to-Server Protocol (?)
     - (Optional for simple server) Implement server-to-server commands.
