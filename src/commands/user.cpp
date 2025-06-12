@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 14:09:53 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/06/12 19:42:00 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/06/12 19:45:45 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,6 @@ void Server::userCommand(int client_fd, const std::string &params)
         client->sendMessage(":irc.local 001 " + client->getNick() + " :Welcome to the IRC server!\r\n");
 		client->sendMessage(":irc.local 002 " + client->getNick() + " :Your host is irc.local, running version 1.0\r\n");
         client->sendMessage(":irc.local 003 " + client->getNick() + " :This server was created 2025-06-12\r\n");
-        client->sendMessage(":irc.local 004 " + client->getNick() + " irc.local 1.0 o o\r\n");
+        client->sendMessage(":irc.local 004 " + client->getNick() + " irc.local 1.0 o itkol\r\n");
 	}
 }
