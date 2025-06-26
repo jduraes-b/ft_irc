@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/03 19:43:06 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/06/26 19:15:32 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epo
 }
 
 Server::~Server()
-{}
+{
+}
 
 void Server::cleanup()
 {
@@ -76,7 +77,8 @@ void	Server::start()
 	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)))
 		throw std::runtime_error("Error while setting socket options");
 	//this sets option for the socket to reuse local adress
-	sockaddr_in server_addr = {}; //initializes struct with zero values
+	sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET; //sets adress family to use IPv4
     server_addr.sin_addr.s_addr = INADDR_ANY; //accepts connections to any network interface
 	server_addr.sin_port = htons(_port);//converts port to network format and sets it
@@ -87,7 +89,8 @@ void	Server::start()
 	    _epoll_fd = epoll_create1(0);
     if (_epoll_fd == -1)
 		throw std::runtime_error("Failed to create epoll instance");
-	epoll_event event = {};
+	epoll_event event;
+	memset(&event, 0, sizeof(event));
 	event.events = EPOLLIN; // Monitor for incoming connections
 	event.data.fd = _server_fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &event) == -1)
@@ -96,6 +99,7 @@ void	Server::start()
 
 	const int MAX_EVENTS = 10;
 	epoll_event events[MAX_EVENTS];
+	memset(events, 0, sizeof(events));
 	while (g_running)
 	{
 		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, -1);
@@ -119,7 +123,8 @@ void	Server::start()
 }
 
 void Server::acceptClient() {
-    sockaddr_in client_addr = {};
+    sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
     socklen_t client_len = sizeof(client_addr);
     int client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &client_len);
     if (client_fd == -1) {
