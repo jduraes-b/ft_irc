@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:34:02 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/02 19:20:52 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:12:34 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,16 @@ void Client::setPass(const std::string &password)
 std::string Client::getPass() const
 {
     return _pass;
+}
+
+void Client::setHost(const std::string &host)
+{
+    _host = host;
+}
+
+std::string Client::getHost() const
+{
+    return _host;
 }
 
 void Client::setCurrChannel(const std::string &channel)

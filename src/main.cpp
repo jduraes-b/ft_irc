@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 20:11:08 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/02 19:20:35 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/02 21:43:27 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@
 
 volatile std::sig_atomic_t g_running = 1;
 
-void handle_sigint(int) {
+void handle_sigint(int) 
+{
     g_running = 0;
 }
 

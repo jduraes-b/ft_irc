@@ -6,11 +6,12 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/06 19:31:29 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:37:23 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils/utils.hpp"
+#include <arpa/inet.h>
 #include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
@@ -20,7 +21,8 @@ Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epo
 }
 
 Server::~Server()
-{}
+{
+}
 
 void Server::cleanup()
 {
@@ -76,7 +78,8 @@ void	Server::start()
 	if (setsockopt(_server_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)))
 		throw std::runtime_error("Error while setting socket options");
 	//this sets option for the socket to reuse local adress
-	sockaddr_in server_addr = {}; //initializes struct with zero values
+	sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET; //sets adress family to use IPv4
     server_addr.sin_addr.s_addr = INADDR_ANY; //accepts connections to any network interface
 	server_addr.sin_port = htons(_port);//converts port to network format and sets it
@@ -87,7 +90,8 @@ void	Server::start()
 	    _epoll_fd = epoll_create1(0);
     if (_epoll_fd == -1)
 		throw std::runtime_error("Failed to create epoll instance");
-	epoll_event event = {};
+	epoll_event event;
+	memset(&event, 0, sizeof(event));
 	event.events = EPOLLIN; // Monitor for incoming connections
 	event.data.fd = _server_fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &event) == -1)
@@ -96,6 +100,7 @@ void	Server::start()
 
 	const int MAX_EVENTS = 10;
 	epoll_event events[MAX_EVENTS];
+	memset(events, 0, sizeof(events));
 	while (g_running)
 	{
 		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, -1);
@@ -113,11 +118,14 @@ void	Server::start()
 				handleClient(events[i].data.fd);
 		}
 	}
+	
+    // Clean up: close sockets, free memory, etc.
     cleanup();
 }
 
 void Server::acceptClient() {
-    sockaddr_in client_addr = {};
+    sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
     socklen_t client_len = sizeof(client_addr);
     int client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &client_len);
     if (client_fd == -1) {
@@ -146,11 +154,15 @@ void Server::acceptClient() {
     }
 
     // Create a new Client object and add it to the list
-    _clients.push_back(new Client(client_fd));
+	char ipstr[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &client_addr.sin_addr, ipstr, sizeof(ipstr));
+	Client* client = new Client(client_fd);
+	client->setHost(std::string(ipstr));
+    _clients.push_back(client);
     std::cout << "New client connected: " << client_fd << std::endl;
 	//attempting to avoid instant disconnection
     try {
-        _clients.back()->sendMessage(":irc.local NOTICE * :Welcome!\r\n");
+        _clients.back()->sendMessage(":irc.local NOTICE * :Hello! Make sure you're registered and authenticated to use the server.\r\n");
     } catch (const std::exception &e) {
         std::cerr << "Failed to send welcome message: " << e.what() << std::endl;
     }
@@ -233,7 +245,7 @@ void Server::parseCommand(int client_fd, const std::string &command)
     
     const char* commands[] = {
         "JOIN", "PART", "KICK", "INVITE", "TOPIC", "MODE",
-        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO", "PING"
+        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO", "CAP"
     };
     const int numCommands = 13;
     
@@ -316,9 +328,8 @@ void Server::parseCommand(int client_fd, const std::string &command)
         case 11:
             whoCommand(client_fd, restOfCommand);
             break;
-		case 12: // PING
-        	client->sendMessage("PONG :" + restOfCommand + "\r\n");
-        	break;
+		case 12:
+			break;
         default:
             // Unknown command
             sendError(client_fd, "421 " + client->getNick() + " " + foundCommand + " :Unknown command");

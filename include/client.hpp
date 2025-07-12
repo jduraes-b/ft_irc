@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:27:39 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/02 19:21:46 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:16:39 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class	Client
 		std::vector<std::string> _channelsList;
 		std::string	_buff;
 		std::string	_pass;
+		std::string	_host;
 		bool	_authenticated;
 
 	public:
@@ -40,6 +41,8 @@ class	Client
 		void setCurrChannel(const std::string &channel);
 		std::string getCurrChannel() const;
 		std::string& getBuffer();
+		std::string getHost() const;
+		void setHost(const std::string &host);
 		void addChannel(const std::string &channel);
 		void removeChannel(const std::string &channel);
 		bool isInChannel(const std::string &channel) const;
