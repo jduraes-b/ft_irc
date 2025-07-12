@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/26 19:15:32 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/12 11:51:28 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,9 +240,9 @@ void Server::parseCommand(int client_fd, const std::string &command)
     
     const char* commands[] = {
         "JOIN", "PART", "KICK", "INVITE", "TOPIC", "MODE",
-        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO"
+        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO", "CAP"
     };
-    const int numCommands = 12;
+    const int numCommands = 13;
     
     Client* client = getClientByFd(client_fd);
     if (!client)
@@ -323,6 +323,8 @@ void Server::parseCommand(int client_fd, const std::string &command)
         case 11:
             whoCommand(client_fd, restOfCommand);
             break;
+		case 12:
+			break;
         default:
             // Unknown command
             sendError(client_fd, "421 " + client->getNick() + " " + foundCommand + " :Unknown command");
