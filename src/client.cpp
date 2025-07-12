@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:34:02 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/06/02 19:20:52 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:49:29 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,15 @@ std::string Client::getUser() const
     return _user;
 }
 
+void Client::setShouldQuit(bool shouldQuit)
+{
+    _shouldquit = shouldQuit;    
+}
+bool Client::getShouldQuit() const
+{
+    return _shouldquit;
+}
+
 void Client::setPass(const std::string &password) 
 {
     _pass = password;
@@ -55,6 +64,16 @@ void Client::setPass(const std::string &password)
 std::string Client::getPass() const
 {
     return _pass;
+}
+
+void Client::setHost(const std::string &host)
+{
+    _host = host;
+}
+
+std::string Client::getHost() const
+{
+    return _host;
 }
 
 void Client::setCurrChannel(const std::string &channel)

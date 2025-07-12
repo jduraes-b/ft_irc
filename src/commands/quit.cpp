@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   quit.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 14:10:13 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/05/31 01:11:08 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:52:27 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,17 +111,8 @@ void Server::quitCommand(int client_fd, const std::string &params)
     {
         
     }
-
     epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);   
-    for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
-    {
-        if ((*it)->getFd() == client_fd)
-        {
-            delete *it;
-            _clients.erase(it);
-            break;
-        }
-    }
     
+    client->setShouldQuit(true);
     std::cout << "Client disconnected and cleaned up successfully" << std::endl;
 }

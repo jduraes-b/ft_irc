@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/07/12 11:51:28 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:50:15 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils/utils.hpp"
+#include <arpa/inet.h>
 #include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
@@ -153,11 +154,15 @@ void Server::acceptClient() {
     }
 
     // Create a new Client object and add it to the list
-    _clients.push_back(new Client(client_fd));
+	char ipstr[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &client_addr.sin_addr, ipstr, sizeof(ipstr));
+	Client* client = new Client(client_fd);
+	client->setHost(std::string(ipstr));
+    _clients.push_back(client);
     std::cout << "New client connected: " << client_fd << std::endl;
 	//attempting to avoid instant disconnection
     try {
-        _clients.back()->sendMessage(":irc.local NOTICE * :Welcome!\r\n");
+        _clients.back()->sendMessage(":irc.local NOTICE * :Hello! Make sure you're registered and authenticated to use the server.\r\n");
     } catch (const std::exception &e) {
         std::cerr << "Failed to send welcome message: " << e.what() << std::endl;
     }
@@ -185,6 +190,20 @@ void Server::handleClient(int client_fd)
 			std::string line = client->getBuffer().substr(0, pos);
 			client->getBuffer().erase(0, pos + 2); // Remove processed command
 			parseCommand(client_fd, line);
+            if (client->getShouldQuit())
+            {
+				// Remover do vector e apagar
+				for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+				{
+					if ((*it)->getFd() == client_fd)
+					{
+						delete *it;
+						_clients.erase(it);
+						break;
+					}
+				}
+				return; // Sair da função
+			}
 		}
         // Any leftover in _buff is a partial command, keep it for next time
     }
