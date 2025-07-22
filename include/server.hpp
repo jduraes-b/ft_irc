@@ -12,13 +12,14 @@ class Server
 	private:
 		int _port;
 		std::string _pass;
-		int _epoll_fd;
+//		int _epoll_fd;
 		int _server_fd;
 		std::vector<Client*> _clients;
 	    std::map<std::string, Channel*> _channels;
 
 	    Client* getClientByFd(int fd);
     	std::string cleanInput(const std::string& input, const std::string& toRemove);
+	    void rebuildPollFds(std::vector<struct pollfd>& pollfds);
 
 	public:
 		Server(int port, const std::string &pass);

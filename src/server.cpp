@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/07/12 12:50:15 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/07/23 00:23:48 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "client.hpp"
 #include "channel.hpp"
 
-Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epoll_fd(-1), _server_fd(-1)
+Server::Server(int port, const std::string &pass): _port(port), _pass(pass), _server_fd(-1)
 {
 }
 
@@ -26,44 +26,34 @@ Server::~Server()
 
 void Server::cleanup()
 {
-    // Fazer cleanup de todos os clientes
+    // cleanup of all clients
     for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
         if (*it != NULL)
         {
-            // Fechar socket do cliente
+            // close socket client
             close((*it)->getFd());
             
-            // Remover do epoll se necessário
-            if (_epoll_fd != -1)
-                epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, (*it)->getFd(), NULL);
-            
-            // Fazer delete do objeto cliente
+            // delete client object
             delete *it;
         }
     }
     
-    // Limpar o vector
+    // clean vector
     _clients.clear();
     
-    // Fazer cleanup dos canais
+    // channels cleanup
     for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
     {
         delete it->second;
     }
     _channels.clear();
     
-    // Fechar sockets do servidor
+    // close socket server
     if (_server_fd != -1)
     {
         close(_server_fd);
         _server_fd = -1;
-    }
-    
-    if (_epoll_fd != -1)
-    {
-        close(_epoll_fd);
-        _epoll_fd = -1;
     }
 }
 
@@ -87,40 +77,107 @@ void	Server::start()
         throw std::runtime_error("Failed to bind socket");
 	if (listen(_server_fd, SOMAXCONN) == -1)//constant that specifies max allowed queued connections
         throw std::runtime_error("Failed to listen on socket");
-	    _epoll_fd = epoll_create1(0);
-    if (_epoll_fd == -1)
-		throw std::runtime_error("Failed to create epoll instance");
-	epoll_event event;
-	memset(&event, 0, sizeof(event));
-	event.events = EPOLLIN; // Monitor for incoming connections
-	event.data.fd = _server_fd;
-	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &event) == -1)
-		throw std::runtime_error("Failed to add server socket to epoll");
+	
 	std::cout << "Server started on port " << _port << std::endl;	
 
-	const int MAX_EVENTS = 10;
-	epoll_event events[MAX_EVENTS];
-	memset(events, 0, sizeof(events));
+	// Vector for pollfd structures
+	std::vector<struct pollfd> pollfds;
+	
+	// add server socket to vector of pollfds
+	struct pollfd server_pfd;
+	server_pfd.fd = _server_fd;
+	server_pfd.events = POLLIN; // Monitor for incoming connections
+	server_pfd.revents = 0;
+	pollfds.push_back(server_pfd);
+	
 	while (g_running)
 	{
-		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, -1);
-		if (num_events == -1)
+		// we call poll() only here.
+		int ret = poll(pollfds.data(), pollfds.size(), -1); // -1 = espera indefinidamente
+		
+		if (ret == -1)
 		{
 			if (errno == EINTR)
 				continue;
-			throw std::runtime_error("epoll_wait failed");
+			throw std::runtime_error("poll failed");
 		}
-		for (int i = 0; i < num_events; i++)
+		
+		// working on file descriptors
+		for (size_t i = 0; i < pollfds.size(); i++)
 		{
-			if (events[i].data.fd == _server_fd)
-				acceptClient();
-			else
-				handleClient(events[i].data.fd);
+			if (pollfds[i].revents & POLLIN)
+			{
+				if (pollfds[i].fd == _server_fd)
+				{
+					// new connection in server socket
+					acceptClient();
+					
+					// refresh vector of pollfds with new client
+					// (made inside acceptClient)
+					rebuildPollFds(pollfds);
+				}
+				else
+				{
+					// data received from a client
+					handleClient(pollfds[i].fd);
+					
+					// if client removed, reconstruct vector
+					if (getClientByFd(pollfds[i].fd) == NULL)
+					{
+						rebuildPollFds(pollfds);
+						break; // exit loop for and restart
+					}
+				}
+			}
+			else if (pollfds[i].revents & (POLLHUP | POLLERR | POLLNVAL))
+			{
+				// client disconnected or error
+				std::cout << "Client disconnected or error on fd: " << pollfds[i].fd << std::endl;
+				
+				// remove client
+				for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+				{
+					if ((*it)->getFd() == pollfds[i].fd)
+					{
+						close(pollfds[i].fd);
+						delete *it;
+						_clients.erase(it);
+						break;
+					}
+				}
+				
+				// reconstruct vector of pollfds
+				rebuildPollFds(pollfds);
+				break; // exit loop and restart
+			}
 		}
 	}
 	
     // Clean up: close sockets, free memory, etc.
     cleanup();
+}
+
+// new function to reconstruct vector of pollfds
+void Server::rebuildPollFds(std::vector<struct pollfd>& pollfds)
+{
+	pollfds.clear();
+	
+	// add server socket
+	struct pollfd server_pfd;
+	server_pfd.fd = _server_fd;
+	server_pfd.events = POLLIN;
+	server_pfd.revents = 0;
+	pollfds.push_back(server_pfd);
+	
+	// add all the socket client
+	for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		struct pollfd client_pfd;
+		client_pfd.fd = (*it)->getFd();
+		client_pfd.events = POLLIN;
+		client_pfd.revents = 0;
+		pollfds.push_back(client_pfd);
+	}
 }
 
 void Server::acceptClient() {
@@ -139,16 +196,6 @@ void Server::acceptClient() {
     // Set the client socket to non-blocking mode
     if (fcntl(client_fd, F_SETFL, O_NONBLOCK) == -1) {
         std::cerr << "Failed to set non-blocking mode for client: " << strerror(errno) << std::endl;
-        close(client_fd);
-        return;
-    }
-
-    // Add the client socket to the epoll instance
-    epoll_event event = {};
-    event.events = EPOLLIN; // Monitor for incoming data
-    event.data.fd = client_fd;
-    if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, client_fd, &event) == -1) {
-        std::cerr << "Failed to add client socket to epoll: " << strerror(errno) << std::endl;
         close(client_fd);
         return;
     }
@@ -192,11 +239,13 @@ void Server::handleClient(int client_fd)
 			parseCommand(client_fd, line);
             if (client->getShouldQuit())
             {
+                close(client_fd);
 				// Remover do vector e apagar
 				for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
 				{
 					if ((*it)->getFd() == client_fd)
 					{
+						close(client_fd);
 						delete *it;
 						_clients.erase(it);
 						break;
@@ -211,14 +260,12 @@ void Server::handleClient(int client_fd)
     {
         std::cout << "Client disconnected: " << e.what() << std::endl;
         
-        // Remove from epoll
-        epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, client_fd, NULL);
-        
         // Remove client from vector
         for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
         {
             if ((*it)->getFd() == client_fd)
             {
+                close(client_fd);
                 delete *it;
                 _clients.erase(it);
                 break;
@@ -226,7 +273,6 @@ void Server::handleClient(int client_fd)
         }
     }
 }
-
 
 Client* Server::getClientByFd(int fd)
 {
