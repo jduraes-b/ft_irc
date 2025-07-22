@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   user.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/30 14:09:53 by rcosta-c          #+#    #+#             */
-/*   Updated: 2025/05/31 01:11:57 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:33:46 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,20 @@ void Server::userCommand(int client_fd, const std::string &params)
         
         client->authenticate();
         std::cout << "Client authenticated: " << client->getNick() << std::endl;
-        client->sendMessage(":irc.local 001 " + client->getNick() + " :Welcome to the IRC server!\r\n");
-    }
+        //client->sendMessage(":irc.local 001 " + client->getNick() + " :Welcome to the IRC server!\r\n");
+		std::string prefix   = ":ft_irc ";
+		std::string nick     = client->getNick();
+		std::string user     = client->getUser();
+		std::string host     = client->getHost();
+		std::string version  = "ft_IRC-1.0";
+		std::string creation = "Mon Jul 12 2025 at 11:00:00";
+
+		client->sendMessage(prefix + "001 " + nick + " :Welcome to the Internet Relay Network " 
+							+ nick + "!" + user + "@" + host + "\r\n");
+		client->sendMessage(prefix + "002 " + nick + " :Your host is ft_irc, running version " + version + "\r\n");
+		client->sendMessage(prefix + "003 " + nick + " :This server was created " 
+							+ creation + "\r\n");
+		client->sendMessage(prefix + "004 " + nick + " ft_irc " 
+							+ version + " o itkol\r\n");
+	}
 }

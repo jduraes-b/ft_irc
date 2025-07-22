@@ -6,15 +6,15 @@
 /*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/31 16:44:38 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:50:15 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "utils/utils.hpp"
+#include <arpa/inet.h>
 #include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
-#include <csignal>
 
 Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epoll_fd(-1), _server_fd(-1)
 {
@@ -22,8 +22,8 @@ Server::Server(int port, const std::string &pass): _port(port), _pass(pass),_epo
 
 Server::~Server()
 {
-    cleanup();
 }
+
 void Server::cleanup()
 {
     // Fazer cleanup de todos os clientes
@@ -66,6 +66,7 @@ void Server::cleanup()
         _epoll_fd = -1;
     }
 }
+
 void	Server::start()
 {
 	_server_fd = socket(AF_INET, SOCK_STREAM, 0);//creates socket
@@ -89,7 +90,8 @@ void	Server::start()
 	    _epoll_fd = epoll_create1(0);
     if (_epoll_fd == -1)
 		throw std::runtime_error("Failed to create epoll instance");
-	epoll_event event = {};
+	epoll_event event;
+	memset(&event, 0, sizeof(event));
 	event.events = EPOLLIN; // Monitor for incoming connections
 	event.data.fd = _server_fd;
 	if (epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, _server_fd, &event) == -1)
@@ -98,13 +100,16 @@ void	Server::start()
 
 	const int MAX_EVENTS = 10;
 	epoll_event events[MAX_EVENTS];
+	memset(events, 0, sizeof(events));
 	while (g_running)
 	{
-		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, 1000); // 1s timeout
-		if (num_events == -1) {
-            if (errno == EINTR) continue; // Interrupted by signal
-            throw std::runtime_error("epoll_wait failed");
-        }
+		int	num_events = epoll_wait(_epoll_fd, events, MAX_EVENTS, -1);
+		if (num_events == -1)
+		{
+			if (errno == EINTR)
+				continue;
+			throw std::runtime_error("epoll_wait failed");
+		}
 		for (int i = 0; i < num_events; i++)
 		{
 			if (events[i].data.fd == _server_fd)
@@ -113,14 +118,14 @@ void	Server::start()
 				handleClient(events[i].data.fd);
 		}
 	}
-   // cleanup();
+	
     // Clean up: close sockets, free memory, etc.
-    // ...add cleanup code here...
+    cleanup();
 }
 
-
 void Server::acceptClient() {
-    sockaddr_in client_addr = {};
+    sockaddr_in client_addr;
+    memset(&client_addr, 0, sizeof(client_addr));
     socklen_t client_len = sizeof(client_addr);
     int client_fd = accept(_server_fd, (struct sockaddr*)&client_addr, &client_len);
     if (client_fd == -1) {
@@ -149,11 +154,15 @@ void Server::acceptClient() {
     }
 
     // Create a new Client object and add it to the list
-    _clients.push_back(new Client(client_fd));
+	char ipstr[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &client_addr.sin_addr, ipstr, sizeof(ipstr));
+	Client* client = new Client(client_fd);
+	client->setHost(std::string(ipstr));
+    _clients.push_back(client);
     std::cout << "New client connected: " << client_fd << std::endl;
 	//attempting to avoid instant disconnection
     try {
-        _clients.back()->sendMessage(":irc.local NOTICE * :Welcome!\r\n");
+        _clients.back()->sendMessage(":irc.local NOTICE * :Hello! Make sure you're registered and authenticated to use the server.\r\n");
     } catch (const std::exception &e) {
         std::cerr << "Failed to send welcome message: " << e.what() << std::endl;
     }
@@ -170,22 +179,33 @@ void Server::handleClient(int client_fd)
         std::string msg = client->receiveMessage();
         if (msg.empty())
             return;
-        
-        size_t start = 0, end;
-        while ((end = msg.find("\r\n", start)) != std::string::npos)
-        {
-            std::string line = msg.substr(start, end - start);
-            start = end + 2;
-            parseCommand(client_fd, line);
-        }
-        
-        // Handle partial command (no \r\n yet)
-        if (start < msg.length())
-        {
-            // TODO
-            // Store partial command for next receive
-            // add a buffer to Client class for this
-        }
+
+        // Accumulate data in the client's buffer
+		client->getBuffer() += msg;
+
+		size_t pos;
+		// Process all complete commands in the buffer
+		while ((pos = client->getBuffer().find("\r\n")) != std::string::npos)
+		{
+			std::string line = client->getBuffer().substr(0, pos);
+			client->getBuffer().erase(0, pos + 2); // Remove processed command
+			parseCommand(client_fd, line);
+            if (client->getShouldQuit())
+            {
+				// Remover do vector e apagar
+				for (std::vector<Client*>::iterator it = _clients.begin(); it != _clients.end(); ++it)
+				{
+					if ((*it)->getFd() == client_fd)
+					{
+						delete *it;
+						_clients.erase(it);
+						break;
+					}
+				}
+				return; // Sair da função
+			}
+		}
+        // Any leftover in _buff is a partial command, keep it for next time
     }
     catch (const std::runtime_error &e)
     {
@@ -239,9 +259,9 @@ void Server::parseCommand(int client_fd, const std::string &command)
     
     const char* commands[] = {
         "JOIN", "PART", "KICK", "INVITE", "TOPIC", "MODE",
-        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO"
+        "PASS", "NICK", "USER", "PRIVMSG", "QUIT", "WHO", "CAP"
     };
-    const int numCommands = 12;
+    const int numCommands = 13;
     
     Client* client = getClientByFd(client_fd);
     if (!client)
@@ -322,6 +342,8 @@ void Server::parseCommand(int client_fd, const std::string &command)
         case 11:
             whoCommand(client_fd, restOfCommand);
             break;
+		case 12:
+			break;
         default:
             // Unknown command
             sendError(client_fd, "421 " + client->getNick() + " " + foundCommand + " :Unknown command");

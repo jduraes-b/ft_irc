@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:27:39 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/05/31 00:51:33 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/07/12 12:49:12 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,9 @@ class	Client
 		std::vector<std::string> _channelsList;
 		std::string	_buff;
 		std::string	_pass;
+		std::string	_host;
 		bool	_authenticated;
+		bool	_shouldquit;
 
 	public:
 		Client(int fd);		
@@ -35,10 +37,15 @@ class	Client
 		std::string getNick() const;
 		void setUser(const std::string &username);
 		std::string getUser() const;
+		void setShouldQuit(bool shouldQuit);
+		bool getShouldQuit() const;
 		void setPass(const std::string &password);
 		std::string getPass() const;
 		void setCurrChannel(const std::string &channel);
 		std::string getCurrChannel() const;
+		std::string& getBuffer();
+		std::string getHost() const;
+		void setHost(const std::string &host);
 		void addChannel(const std::string &channel);
 		void removeChannel(const std::string &channel);
 		bool isInChannel(const std::string &channel) const;

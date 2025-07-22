@@ -29,7 +29,6 @@ class Server
 		void handleClient(int client_fd);
 		void cleanup();
 
-
 		void parseCommand(int client_fd, const std::string &command);
 		void joinCommand(int client_fd, const std::string &params);
 		void partCommand(int client_fd, const std::string &params);
