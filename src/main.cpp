@@ -6,7 +6,7 @@
 /*   By: jduraes- <jduraes-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/13 20:11:08 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/07/02 21:43:27 by jduraes-         ###   ########.fr       */
+/*   Updated: 2025/07/23 19:06:53 by jduraes-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,16 @@ void handle_sigint(int)
     g_running = 0;
 }
 
+void	parser(int port, std::string pass)
+{
+	if (port <= 0 || port > 65535)
+		throw std::runtime_error("port must be in 1-65535 range.");
+	if (port < 1024)
+        throw std::runtime_error("ports <1024 require root privileges");
+    if (pass.empty() || pass.find_first_of(" \t\r\n") != std::string::npos || pass.size() > 64)
+        throw std::runtime_error("password must be 1-64 printable chars, no spaces");
+}
+
 int main(int ac, char **av)
 {    
     if (ac != 3)
@@ -30,10 +40,10 @@ int main(int ac, char **av)
     }
     try
 	{
+		parser(std::atoi(av[1]), std::string(av[2]));
         // Initialize the server with a port and optional password
-        //int port = 6667; // Default IRC port
-        Server server(std::atoi(av[1]), av[2]);
-		
+        //int port = 6667; // Default IRC port   
+		Server server(std::atoi(av[1]), av[2]);
 		std::signal(SIGINT, handle_sigint);
         // Start the server (includes the main event loop)
         server.start();
