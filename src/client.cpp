@@ -3,18 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: rcosta-c <rcosta-c@student.42.fr>          +#+  +:+       +#+        */
+/*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/20 18:34:02 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/07/12 12:49:29 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/07/23 16:03:57 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "client.hpp"
 
 
-Client::Client(int fd) : _clientFd(fd), _authenticated(false)
+Client::Client(int fd) : _clientFd(fd), _authenticated(false), _shouldquit(false)
 {
+    _nick = "";
+	_user = "";
+	_buff = "";
+	_pass = "";
+	_host = "";
 }
 
 Client::~Client()
