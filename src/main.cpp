@@ -23,10 +23,12 @@ void handle_sigint(int)
 
 void	parser(int port, std::string pass)
 {
-	if ((port < 6660 || port > 6669) && port != 6697 && port != 7000)
-		throw std::runtime_error("port must be in [6660..6669, 6697, 7000].");
-	/*if (port < 1024)
-        throw std::runtime_error("ports <1024 require root privileges");*/
+	if (port <= 0 || port > 65535)
+        	throw std::runtime_error("port must be in [0..65535].");
+	/*if ((port < 6660 || port > 6669) && port != 6697 && port != 7000)
+		throw std::runtime_error("port must be in [6660..6669, 6697, 7000].");*/
+	if (port < 1024)
+        	throw std::runtime_error("ports <1024 require root privileges");
     if (pass.empty() || pass.find_first_of(" \t\r\n") != std::string::npos || pass.size() > 64)
         throw std::runtime_error("password must be 1-64 printable chars, no spaces");
 }
