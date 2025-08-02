@@ -29,6 +29,7 @@ class Server
 		void acceptClient();
 		void handleClient(int client_fd);
 		void cleanup();
+		void removeClientFromAllChannels(Client* client);
 
 		void parseCommand(int client_fd, const std::string &command);
 		void joinCommand(int client_fd, const std::string &params);

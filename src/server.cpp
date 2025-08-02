@@ -6,7 +6,7 @@
 /*   By: rcosta-c <rcosta-c@student.42porto.com>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/14 18:56:57 by jduraes-          #+#    #+#             */
-/*   Updated: 2025/07/23 00:23:48 by rcosta-c         ###   ########.fr       */
+/*   Updated: 2025/08/02 11:11:01 by rcosta-c         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,6 +139,7 @@ void	Server::start()
 				{
 					if ((*it)->getFd() == pollfds[i].fd)
 					{
+                        removeClientFromAllChannels(*it);
 						close(pollfds[i].fd);
 						delete *it;
 						_clients.erase(it);
@@ -155,6 +156,37 @@ void	Server::start()
 	
     // Clean up: close sockets, free memory, etc.
     cleanup();
+}
+
+void Server::removeClientFromAllChannels(Client* client)
+{
+    if (!client) return;
+    
+    std::vector<std::string> channels = client->getChannels();
+    
+    for (std::vector<std::string>::iterator it = channels.begin(); it != channels.end(); ++it)
+    {
+        std::string channelName = *it;
+        
+        std::map<std::string, Channel*>::iterator channelIt = _channels.find(channelName);
+        if (channelIt != _channels.end())
+        {
+            Channel* channel = channelIt->second;
+            
+            std::string quitMsg = ":" + client->getNick() + "!" + client->getUser() + "@" + client->getHost() + " QUIT :Client disconnected\r\n";
+            channel->broadcastMessage(quitMsg, client);
+            
+            channel->removeMember(client);
+            
+            if (channel->getMemberCount() == 0)
+            {
+                delete channel;
+                _channels.erase(channelIt);
+            }
+        }
+    }
+    
+    client->clearChannels();
 }
 
 // new function to reconstruct vector of pollfds
@@ -265,6 +297,7 @@ void Server::handleClient(int client_fd)
         {
             if ((*it)->getFd() == client_fd)
             {
+                removeClientFromAllChannels(*it);
                 close(client_fd);
                 delete *it;
                 _clients.erase(it);
